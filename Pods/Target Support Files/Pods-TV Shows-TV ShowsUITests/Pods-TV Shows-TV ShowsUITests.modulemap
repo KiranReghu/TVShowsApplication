@@ -1,0 +1,6 @@
+framework module Pods_TV_Shows_TV_ShowsUITests {
+  umbrella header "Pods-TV Shows-TV ShowsUITests-umbrella.h"
+
+  export *
+  module * { export * }
+}
