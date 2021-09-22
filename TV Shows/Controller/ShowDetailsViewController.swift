@@ -99,6 +99,8 @@ extension ShowDetailsViewController {
         
         mainStackView = utility.getStackView(axis: .vertical, alignment: .fill, distribution: .fill, spacing: 20)
         
+        setBackgroundImage(image: image)
+        
         let imageView = UIImageView(image: image)
         
         imageView.clipsToBounds = true
@@ -123,6 +125,11 @@ extension ShowDetailsViewController {
         let line2 = utility.getView(color: .white, width:  Int(view.bounds.width) - 20, height: 3)
         mainStackView.addArrangedSubview(line2)
         
+        mainStackView.addArrangedSubview( getSeasonView())
+        
+        let line3 = utility.getView(color: .white, width:  Int(view.bounds.width) - 20, height: 3)
+        mainStackView.addArrangedSubview(line3)
+        
         mainStackView.addArrangedSubview(getCosmosView())
         
         constrainMainStackView()
@@ -131,12 +138,54 @@ extension ShowDetailsViewController {
         
     }
     
+    func setBackgroundImage(image: UIImage){
+        
+        let backgroundImageView = UIImageView(frame: self.view.frame)
+        backgroundImageView.image = image
+        backgroundImageView.contentMode = .scaleAspectFill
+        backgroundImageView.alpha = 0.1
+        self.view.insertSubview(backgroundImageView, at: 0)
+        
+    }
+    
+    private func getSeasonView() -> UIStackView{
+        
+        let seasonLabel = utility.getLabel( UIFont.systemFont(ofSize: 18, weight: .regular), color: .white)
+        seasonLabel.text = "Seasons"
+        
+        let verticalView = utility.getStackView(axis: .vertical, alignment: .leading, distribution: .fill, spacing: 20)
+        
+        verticalView.addArrangedSubview(seasonLabel)
+        verticalView.addArrangedSubview(getRoundedStack(3))
+        
+        return verticalView
+        
+    }
+    
+    private func getRoundedStack(_ count: Int) -> UIStackView {
+        
+        let horizontalView = utility.getStackView(axis: .horizontal, alignment: .leading, distribution: .fill, spacing: 20)
+        
+        for _ in 0...count-1 {
+            
+            let roundedView = utility.getRoundedView(40, radius: 20)
+            horizontalView.addArrangedSubview(roundedView)
+            
+        }
+        
+        return horizontalView
+        
+    }
     
     func setUpBackButton() {
-        self.navigationItem.hidesBackButton = true
-        let newBackButton = UIBarButtonItem(title: "\u{276E} Back", style: UIBarButtonItem.Style.plain, target: self, action: #selector(backButtonClick(sender:)))
         
+        let newBackButton = UIBarButtonItem(image: UIImage(named: "back-button"),
+                                            style: UIBarButtonItem.Style.plain,
+                                            target: self,
+                                            action: #selector(backButtonClick(sender:)))
+        newBackButton.tintColor = .white
         self.navigationItem.leftBarButtonItem = newBackButton
+        
     }
     
     @objc func backButtonClick(sender: UIBarButtonItem) {
@@ -144,7 +193,6 @@ extension ShowDetailsViewController {
         self.dismiss(animated: true, completion: nil)
         
     }
-    
     
     private func getCosmosView() -> UIView{
         
@@ -209,8 +257,7 @@ extension ShowDetailsViewController {
     
 }
 
-
-//MARK:-
+//MARK:- Utility
 extension ShowDetailsViewController {
     
     private func getMoviewDetailsDictionary() -> [String : String] {
@@ -253,7 +300,6 @@ extension ShowDetailsViewController {
   
     
 }
-
 
 //MARK:- CoreData
 extension ShowDetailsViewController {

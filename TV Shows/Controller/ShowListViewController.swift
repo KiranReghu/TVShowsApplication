@@ -69,9 +69,9 @@ extension ShowListViewController {
     
     private func setupView() {
         
-        view.backgroundColor = .black.withAlphaComponent(0.7)
+        setNavigationView()
         
-        mainStackView = utility.getStackView(axis: .vertical, alignment: .fill, distribution: .fill, spacing: 10)
+        mainStackView = utility.getStackView(axis: .vertical, alignment: .fill, distribution: .fill, spacing: 15)
        
         setUpSearchTextField()
         
@@ -81,20 +81,39 @@ extension ShowListViewController {
         
     }
     
+    private func setNavigationView() {
+        
+        view.backgroundColor = UIColor(red: 40/255, green: 40/255, blue: 36/255, alpha: 1)
+        
+        self.navigationController?.navigationBar.barTintColor = UIColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
+        self.navigationController?.navigationBar.titleTextAttributes = [
+            NSAttributedString.Key.foregroundColor: UIColor.white,
+            NSAttributedString.Key.kern: 2.0,
+            NSAttributedString.Key.font: UIFont.systemFont(ofSize: 25, weight: .semibold)
+        ]
+        
+        self.navigationController?.navigationBar.isTranslucent = false
+        
+    }
+    
     private func setUpSearchTextField() {
         
         let image =  (UIImage(named: "search")!).resizeImage(targetSize: CGSize(width: 20, height: 20))
         
-        image.withTintColor(.lightGray)
+        image.withTintColor(.darkGray)
         searchTextField = utility.getTextField(height: 40,
                                                placeHolderImage: image,
                                                placeHolderName: "Search Series")
         
-//        searchTextField.layoutMargins = UIEdgeInsets(top: 0, left: 0, bottom: 5, right: -5)
+        let searchPlaceholderText = NSAttributedString(string: "Search Series",
+                                                            attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
+                
+        searchTextField.attributedPlaceholder = searchPlaceholderText
         
+        searchTextField.textColor = .white
         searchTextField.layer.cornerRadius = 6
         
-        searchTextField.backgroundColor = .lightText
+        searchTextField.backgroundColor = UIColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
         
         mainStackView.addArrangedSubview(searchTextField)
         
@@ -106,8 +125,8 @@ extension ShowListViewController {
         
         showsCollectionView =  UICollectionView(frame: .zero, collectionViewLayout: flowlayout)
         showsCollectionView.translatesAutoresizingMaskIntoConstraints = false
-        showsCollectionView.backgroundColor = .black.withAlphaComponent(0.2)
-       
+        showsCollectionView.backgroundColor =  UIColor(red: 30/255, green: 30/255, blue: 30/255, alpha: 1)
+        
         showsCollectionView.register(ShowsCollectionViewCell.self, forCellWithReuseIdentifier: "cell")
         showsCollectionView.dataSource = self
         showsCollectionView.delegate = self
@@ -120,17 +139,16 @@ extension ShowListViewController {
         view.addSubview(mainStackView)
         
         NSLayoutConstraint.activate([
-            mainStackView.topAnchor.constraint(equalTo: view.topAnchor, constant: 60),
-            mainStackView.leadingAnchor.constraint(equalTo: view.leadingAnchor, constant: 5),
-            mainStackView.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -5),
-            mainStackView.bottomAnchor.constraint(equalTo: view.bottomAnchor)
+            mainStackView.topAnchor.constraint(equalTo: view.safeAreaLayoutGuide.topAnchor, constant: 10),
+            mainStackView.leadingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.leadingAnchor, constant: 5),
+            mainStackView.trailingAnchor.constraint(equalTo: view.safeAreaLayoutGuide.trailingAnchor, constant: -5),
+            mainStackView.bottomAnchor.constraint(equalTo: view.safeAreaLayoutGuide.bottomAnchor)
         
         ])
         
     }
     
 }
-
 
 //MARK:- CollectionView Delegate
 extension ShowListViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
@@ -145,13 +163,17 @@ extension ShowListViewController: UICollectionViewDelegate, UICollectionViewData
         cell.backgroundColor = .darkGray
         let imageUrl = ShowsDataSource[indexPath.row].image
         
-        cell.setView(image: UIImage(named: "dummy")!, labelValue: "Loading...")
+        cell.imageView.image = UIImage(named: "dummy")!
+        cell.showName.text = "Loading..."
+        cell.labelRating.text = "0.0"
         
         getImageFromUrl(urlString: imageUrl.medium, completion: { image in
             
             DispatchQueue.main.async {
                 
-                cell.setView(image: image, labelValue: self.ShowsDataSource[indexPath.row].name)
+                cell.imageView.image = image
+                cell.showName.text = self.ShowsDataSource[indexPath.row].name
+                cell.labelRating.text = self.ShowsDataSource[indexPath.row].rating.average?.rounded().description ?? "0.0"
                 
             }
             
@@ -167,16 +189,11 @@ extension ShowListViewController: UICollectionViewDelegate, UICollectionViewData
         
         vc.didTapRating = { (rating : Double) in
             
-            
-            
-            
             let alert = UIAlertController(title: "TV show", message: "Your rating is \(rating.rounded()) ", preferredStyle: UIAlertController.Style.alert)
             
             alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
           
             self.present(alert, animated: true, completion: nil)
-            
-            
             
         }
         

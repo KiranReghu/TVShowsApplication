@@ -63,6 +63,25 @@ public struct Utility {
         
     }
     
+    public func getRoundedView(_ size: CGFloat, radius: CGFloat) -> UIView {
+        
+        let roundedView = UIView(frame: .zero)
+        roundedView.translatesAutoresizingMaskIntoConstraints = false
+        roundedView.layer.cornerRadius = radius
+        roundedView.backgroundColor = .lightGray
+        
+        NSLayoutConstraint.activate([
+        
+            roundedView.heightAnchor.constraint(equalToConstant: size),
+            roundedView.widthAnchor.constraint(equalToConstant: size)
+        
+        ])
+        
+        return roundedView
+        
+    }
+    
+    
 }
 public enum NetworkErrors: Error {
     
