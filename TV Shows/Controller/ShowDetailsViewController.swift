@@ -28,7 +28,6 @@ class ShowDetailsViewController: UIViewController {
     override func viewDidLoad() {
         super.viewDidLoad()
 
-        
         getShowDetail(showDetailsId, completion: {  [weak self] response in
             
             switch response {
@@ -102,6 +101,9 @@ extension ShowDetailsViewController {
         
         let imageView = UIImageView(image: image)
         
+        imageView.clipsToBounds = true
+        imageView.contentMode = .scaleAspectFit
+
         descriptionLabel = utility.getLabel( UIFont.systemFont(ofSize: 18, weight: .regular), color: .white)
         descriptionLabel.numberOfLines = 0
         
