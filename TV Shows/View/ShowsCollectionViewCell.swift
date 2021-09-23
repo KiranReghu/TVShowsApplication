@@ -67,15 +67,7 @@ extension ShowsCollectionViewCell {
         contentView.bringSubviewToFront(ratingStarView)
         contentView.bringSubviewToFront(labelRating)
               
-        NSLayoutConstraint.activate([
-            
-            ratingStarView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -5),
-            
-            ratingStarView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 5),
-            labelRating.centerXAnchor.constraint(equalTo: ratingStarView.centerXAnchor),
-            labelRating.centerYAnchor.constraint(equalTo: ratingStarView.centerYAnchor)
-            
-        ])
+        constrainStarView(ratingStarView)
         
     }
     
@@ -90,6 +82,20 @@ extension ShowsCollectionViewCell {
             stackViewiew.topAnchor.constraint(equalTo: contentView.topAnchor),
             stackViewiew.bottomAnchor.constraint(equalTo: contentView.bottomAnchor)
         
+        ])
+        
+    }
+    
+    private func constrainStarView(_ ratingStarView: UIImageView) {
+        
+        NSLayoutConstraint.activate([
+            
+            ratingStarView.trailingAnchor.constraint(equalTo: self.contentView.trailingAnchor, constant: -5),
+            
+            ratingStarView.topAnchor.constraint(equalTo: self.contentView.topAnchor, constant: 5),
+            labelRating.centerXAnchor.constraint(equalTo: ratingStarView.centerXAnchor),
+            labelRating.centerYAnchor.constraint(equalTo: ratingStarView.centerYAnchor)
+            
         ])
         
     }

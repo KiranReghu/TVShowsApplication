@@ -63,19 +63,26 @@ public struct Utility {
         
     }
     
-    public func getRoundedView(_ size: CGFloat, radius: CGFloat) -> UIView {
+    public func getRoundedView(_ size: CGFloat, radius: CGFloat, view: UIView) -> UIView {
         
         let roundedView = UIView(frame: .zero)
         roundedView.translatesAutoresizingMaskIntoConstraints = false
         roundedView.layer.cornerRadius = radius
-        roundedView.backgroundColor = .lightGray
+        roundedView.backgroundColor = .darkGray
+        
+        roundedView.addSubview(view)
+        roundedView.bringSubviewToFront(view)
         
         NSLayoutConstraint.activate([
         
             roundedView.heightAnchor.constraint(equalToConstant: size),
-            roundedView.widthAnchor.constraint(equalToConstant: size)
+            roundedView.widthAnchor.constraint(equalToConstant: size),
+            
+            roundedView.centerXAnchor.constraint(equalTo: view.centerXAnchor),
+            roundedView.centerYAnchor.constraint(equalTo: view.centerYAnchor),
         
         ])
+       
         
         return roundedView
         

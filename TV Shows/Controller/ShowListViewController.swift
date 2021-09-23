@@ -20,44 +20,10 @@ class ShowListViewController: UIViewController {
       
         super.viewDidLoad()
         setupView()
-        
-        getShows { [weak self] response in
-            
-            switch response {
-            
-            case .failure(let error):
-                print(error)
-                break
-                
-            case .success(let showsList):
-                
-                DispatchQueue.main.async {
-                    
-                    self?.ShowsDataSource.append(contentsOf: showsList)
-                    self?.showsCollectionView.reloadData()
-                    
-                }
-                
-                break
-            
-            }
-            
-        }
-        
+        loadData()
+       
     }
-    
-    override func viewWillLayoutSubviews() {
-     
-        super.viewWillLayoutSubviews()
-        
-        guard let flowLayout = showsCollectionView.collectionViewLayout as? UICollectionViewFlowLayout else {
-            return
-        }
-        
-        flowLayout.invalidateLayout()
-        
-    }
-
+ 
     deinit {
         print("ShowList DeInited")
     }
@@ -107,7 +73,7 @@ extension ShowListViewController {
         
         let searchPlaceholderText = NSAttributedString(string: "Search Series",
                                                             attributes: [NSAttributedString.Key.foregroundColor: UIColor.lightGray])
-                
+        searchTextField.delegate = self
         searchTextField.attributedPlaceholder = searchPlaceholderText
         
         searchTextField.textColor = .white
@@ -150,6 +116,38 @@ extension ShowListViewController {
     
 }
 
+//MARK:- Utility
+extension ShowListViewController {
+    
+    private func loadData() {
+        
+        getShows { [weak self] response in
+            
+            switch response {
+            
+            case .failure(let error):
+                print(error)
+                break
+                
+            case .success(let showsList):
+                
+                DispatchQueue.main.async {
+                    
+                    self?.ShowsDataSource.append(contentsOf: showsList)
+                    self?.showsCollectionView.reloadData()
+                    
+                }
+                
+                break
+            
+            }
+            
+        }
+        
+    }
+    
+}
+
 //MARK:- CollectionView Delegate
 extension ShowListViewController: UICollectionViewDelegate, UICollectionViewDataSource, UICollectionViewDelegateFlowLayout {
   
@@ -164,47 +162,53 @@ extension ShowListViewController: UICollectionViewDelegate, UICollectionViewData
         let imageUrl = ShowsDataSource[indexPath.row].image
         
         cell.imageView.image = UIImage(named: "dummy")!
-        cell.showName.text = "Loading..."
-        cell.labelRating.text = "0.0"
+        cell.showName.text = self.ShowsDataSource[indexPath.row].name
+        cell.labelRating.text = self.ShowsDataSource[indexPath.row].rating.average?.rounded().description ?? "0.0"
         
-        getImageFromUrl(urlString: imageUrl.medium, completion: { image in
+        if let url = imageUrl?.medium {
             
-            DispatchQueue.main.async {
+            getImageFromUrl(urlString: url, completion: { image in
                 
-                cell.imageView.image = image
-                cell.showName.text = self.ShowsDataSource[indexPath.row].name
-                cell.labelRating.text = self.ShowsDataSource[indexPath.row].rating.average?.rounded().description ?? "0.0"
+                DispatchQueue.main.async {
+                    
+                    cell.imageView.image = image
+                   
+                }
                 
-            }
+            })
             
-        })
+        }
         
         return cell
         
     }
     
-    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
+    override func prepare(for segue: UIStoryboardSegue, sender: Any?) {
         
-        let vc = ShowDetailsViewController(showDetailsId: ShowsDataSource[indexPath.row].id)
-        
-        vc.didTapRating = { (rating : Double) in
+        if segue.identifier == "detailsSegue",
+          let indexPath = sender as? IndexPath,
+          let vc = segue.destination as? ShowDetailsViewController{
             
-            let alert = UIAlertController(title: "TV show", message: "Your rating is \(rating.rounded()) ", preferredStyle: UIAlertController.Style.alert)
             
-            alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
-          
-            self.present(alert, animated: true, completion: nil)
+            vc.didTapRating = { (rating : Double) in
+                
+                let alert = UIAlertController(title: "TV show", message: "Your rating is \(rating.rounded()) ", preferredStyle: UIAlertController.Style.alert)
+                
+                alert.addAction(UIAlertAction(title: "Ok", style: UIAlertAction.Style.default, handler: nil))
+                
+                self.present(alert, animated: true, completion: nil)
+                
+            }
+           
+            vc.showDetailsId = ShowsDataSource[indexPath.row].id
             
         }
         
-        let nav = UINavigationController(rootViewController: vc)
-
-        nav.modalPresentationStyle = .fullScreen
+    }
+    
+    func collectionView(_ collectionView: UICollectionView, didSelectItemAt indexPath: IndexPath) {
         
-        nav.navigationBar.backgroundColor = .black
-   
-        
-        self.present(nav, animated: true, completion: nil)
+        self.performSegue(withIdentifier: "detailsSegue", sender: indexPath)
         
     }
     
@@ -222,9 +226,9 @@ extension ShowListViewController: UICollectionViewDelegate, UICollectionViewData
 //MARK:- APIs
 extension ShowListViewController {
     
-    private func getShows(completion : @escaping ((Result<[ShowsListModel], Error>) -> ())) {
+    private func getShows(searchKeyword: String = "", completion : @escaping ((Result<[ShowsListModel], Error>) -> ())) {
         
-        guard let url = URL(string: "https://api.tvmaze.com/shows?page=1") else {
+        guard let url = URL(string: "https://api.tvmaze.com/\(searchKeyword.isEmpty ? "" : "search/")shows?page=1\(searchKeyword.isEmpty ? "" : "&q=\(searchKeyword)")") else {
             return
         }
         
@@ -237,9 +241,22 @@ extension ShowListViewController {
             
             do {
                 
-                let datSource = try JSONDecoder().decode([ShowsListModel].self , from: showsInDataFormat)
+                if searchKeyword.isEmpty {
+                    
+                    let datSource = try JSONDecoder().decode([ShowsListModel].self , from: showsInDataFormat)
+                    
+                    completion(.success(datSource))
+                    
+                } else {
+                    
+                    let datSource = try JSONDecoder().decode([SearchShowListModel].self , from: showsInDataFormat)
+                    
+                    let showListDatSource = datSource.map{ $0.show }
+                    
+                    completion(.success(showListDatSource))
+                    
+                }
                 
-                completion(.success(datSource))
                 
             } catch let error {
                 
@@ -272,5 +289,36 @@ extension ShowListViewController {
     
 }
 
+//MARK:- UITextFieldDelegate
+extension ShowListViewController: UITextFieldDelegate {
+    
+    func textFieldShouldReturn(_ textField: UITextField) -> Bool {
 
+        textField.resignFirstResponder()
+        getShows(searchKeyword: textField.text ?? "") { [weak self] response in
+            
+            switch response {
+            
+            case .failure(let error):
+                print(error)
+                break
+                
+            case .success(let showsList):
+                
+                DispatchQueue.main.async {
+                    
+                    self?.ShowsDataSource = showsList
+                    self?.showsCollectionView.reloadData()
+                    
+                }
+                
+                break
+            
+            }
+            
+        }
+        
+        return true
+    }
 
+}

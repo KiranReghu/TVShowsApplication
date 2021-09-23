@@ -8,13 +8,31 @@
 import Foundation
 
 
+class SearchShowListModel: Codable {
+    
+    let score: Double
+    let show : ShowsListModel
+    
+    enum CodingKeys: String, CodingKey {
+        case score
+        case show
+    }
+    
+}
+
+class Seasons: Codable {
+   
+    let id: Int
+    
+}
+
 // MARK: - ShowsListModel
 class ShowsListModel: Codable {
     let id: Int
     let url: String
     let name: String
     let type: TypeEnum
-    let language: Language
+    let language: Language?
     let genres: [String]
     let status: Status
     let runtime, averageRuntime: Int?
@@ -24,19 +42,18 @@ class ShowsListModel: Codable {
     let rating: Rating
     let weight: Int
     let network, webChannel: Network?
-    let dvdCountry: JSONNull?
     let externals: Externals
-    let image: Image
+    let image: Image?
     let summary: String
     let updated: Int
     let links: Links
 
     enum CodingKeys: String, CodingKey {
-        case id, url, name, type, language, genres, status, runtime, averageRuntime, premiered, ended, officialSite, schedule, rating, weight, network, webChannel, dvdCountry, externals, image, summary, updated
+        case id, url, name, type, language, genres, status, runtime, averageRuntime, premiered, ended, officialSite, schedule, rating, weight, network, webChannel, externals, image, summary, updated
         case links = "_links"
     }
 
-    init(id: Int, url: String, name: String, type: TypeEnum, language: Language, genres: [String], status: Status, runtime: Int?, averageRuntime: Int?, premiered: String?, ended: String?, officialSite: String?, schedule: Schedule, rating: Rating, weight: Int, network: Network?, webChannel: Network?, dvdCountry: JSONNull?, externals: Externals, image: Image, summary: String, updated: Int, links: Links) {
+    init(id: Int, url: String, name: String, type: TypeEnum, language: Language, genres: [String], status: Status, runtime: Int?, averageRuntime: Int?, premiered: String?, ended: String?, officialSite: String?, schedule: Schedule, rating: Rating, weight: Int, network: Network?, webChannel: Network?, externals: Externals, image: Image, summary: String, updated: Int, links: Links) {
         self.id = id
         self.url = url
         self.name = name
@@ -54,7 +71,6 @@ class ShowsListModel: Codable {
         self.weight = weight
         self.network = network
         self.webChannel = webChannel
-        self.dvdCountry = dvdCountry
         self.externals = externals
         self.image = image
         self.summary = summary
@@ -65,11 +81,11 @@ class ShowsListModel: Codable {
 
 // MARK: - Externals
 class Externals: Codable {
-    let tvrage: Int
+    let tvrage: Int?
     let thetvdb: Int?
     let imdb: String?
 
-    init(tvrage: Int, thetvdb: Int?, imdb: String?) {
+    init(tvrage: Int?, thetvdb: Int?, imdb: String?) {
         self.tvrage = tvrage
         self.thetvdb = thetvdb
         self.imdb = imdb
@@ -89,6 +105,7 @@ class Image: Codable {
 enum Language: String, Codable {
     case english = "English"
     case japanese = "Japanese"
+    case korean = "Korean"
 }
 
 // MARK: - Links
@@ -119,7 +136,7 @@ class Nextepisode: Codable {
 
 // MARK: - Network
 class Network: Codable {
-    let id: Int
+    let id: Int?
     let name: String
     let country: Country?
 
@@ -213,33 +230,6 @@ enum TypeEnum: String, Codable {
     case sports = "Sports"
     case talkShow = "Talk Show"
     case variety = "Variety"
-}
-
-typealias Welcome = [ShowsListModel]
-
-// MARK: - Encode/decode helpers
-
-class JSONNull: Codable, Hashable {
-
-    public static func == (lhs: JSONNull, rhs: JSONNull) -> Bool {
-        return true
-    }
-
-    public var hashValue: Int {
-        return 0
-    }
-
-    public init() {}
-
-    public required init(from decoder: Decoder) throws {
-        let container = try decoder.singleValueContainer()
-        if !container.decodeNil() {
-            throw DecodingError.typeMismatch(JSONNull.self, DecodingError.Context(codingPath: decoder.codingPath, debugDescription: "Wrong type for JSONNull"))
-        }
-    }
-
-    public func encode(to encoder: Encoder) throws {
-        var container = encoder.singleValueContainer()
-        try container.encodeNil()
-    }
+    case ended = "Ended"
+    case running = "Running"
 }
